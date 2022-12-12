@@ -17,11 +17,9 @@ namespace TheatricalPlayersRefactoringKata
             {
                 var play = listOfPlays[performance.PlayID];
                 var playCost = 0;
-                playCost = FindPlayCostFromPlayType(play, playCost, performance);
+                playCost = FindPlayCostFromPlayType(play, performance);
                 volumeCredits = CalculateVolumeCredits(performance, play, volumeCredits);
-
-                // print line for this order
-                result += String.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(playCost / 100), performance.Audience);
+                result += PrintLineForOrder(cultureInfo, play, playCost, performance);
                 totalAmount += playCost;
             }
             result += String.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
@@ -29,15 +27,16 @@ namespace TheatricalPlayersRefactoringKata
             return result;
         }
 
-        private int FindPlayCostFromPlayType(Play play, Int32 playCost, Performance performance)
+        private int FindPlayCostFromPlayType(Play play, Performance performance)
         {
+            int playCost = 0;
             switch (play.Type)
             {
                 case "tragedy":
-                    playCost = CalculateTragedyPlayCost(playCost, performance);
+                    playCost = CalculateTragedyPlayCost(performance);
                     break;
                 case "comedy":
-                    playCost = CalculateComedyPlayCost(playCost, performance);
+                    playCost = CalculateComedyPlayCost(performance);
                     break;
                 default:
                     throw new Exception("unknown type: " + play.Type);
@@ -45,36 +44,38 @@ namespace TheatricalPlayersRefactoringKata
             return playCost;
         }
 
-        private int CalculateTragedyPlayCost(Int32 playCost, Performance performance)
+        private int CalculateTragedyPlayCost(Performance performance)
         {
-            playCost = 40000;
+            int playCost = 40000;
             if (performance.Audience > 30)
             {
                 playCost += 1000 * (performance.Audience - 30);
             }
-
             return playCost;
         }
 
-        private int CalculateComedyPlayCost(Int32 playCost, Performance performance)
+        private int CalculateComedyPlayCost(Performance performance)
         {
-            playCost = 30000;
+            int playCost = 30000;
             if (performance.Audience > 20)
             {
                 playCost += 10000 + 500 * (performance.Audience - 20);
             }
             playCost += 300 * performance.Audience;
-
             return playCost;
         }
 
         private int CalculateVolumeCredits(Performance performance, Play play, int volumeCredits)
         {
-            // add volume credits
             volumeCredits += Math.Max(performance.Audience - 30, 0);
             // add extra credit for every ten comedy attendees
             if ("comedy" == play.Type) volumeCredits += (int)Math.Floor((decimal)performance.Audience / 5);
             return volumeCredits;
+        }
+
+        private string PrintLineForOrder(CultureInfo cultureInfo, Play play, int playCost, Performance performance)
+        {
+            return String.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(playCost / 100), performance.Audience);
         }
     }
 }
